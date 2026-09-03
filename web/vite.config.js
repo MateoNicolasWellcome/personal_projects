@@ -3,6 +3,9 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
+  // Relative base so the built assets work when served from a GitHub Pages
+  // project subpath (e.g. https://<user>.github.io/personal_projects/).
+  base: "./",
   server: {
     host: true,
     port: 5173,

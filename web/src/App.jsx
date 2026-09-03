@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api } from "./api.js";
+import { getStore } from "./storage.js";
 
 const DEFAULT_FORM = {
   name: "",
@@ -17,13 +17,20 @@ export default function App() {
   const [loading, setLoading] = useState(true);
 
   async function refresh() {
-    const data = await api.listHabits();
+    const store = await getStore();
+    const data = await store.listHabits();
     setHabits(data.habits);
     setStats(data.stats);
   }
 
   useEffect(() => {
-    Promise.all([refresh(), api.listTimespans().then((d) => setTimespans(d.timespans))])
+    (async () => {
+      const store = await getStore();
+      const [data, ts] = await Promise.all([store.listHabits(), store.listTimespans()]);
+      setHabits(data.habits);
+      setStats(data.stats);
+      setTimespans(ts.timespans);
+    })()
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
   }, []);
@@ -36,7 +43,8 @@ export default function App() {
     event.preventDefault();
     setError("");
     try {
-      await api.createHabit({
+      const store = await getStore();
+      await store.createHabit({
         name: form.name,
         goal: form.goal,
         timespan: form.timespan,
@@ -52,7 +60,8 @@ export default function App() {
   async function checkIn(habit, delta) {
     setError("");
     try {
-      await api.checkIn(habit.id, delta);
+      const store = await getStore();
+      await store.checkIn(habit.id, delta);
       await refresh();
     } catch (e) {
       setError(e.message);
@@ -62,7 +71,8 @@ export default function App() {
   async function remove(habit) {
     setError("");
     try {
-      await api.deleteHabit(habit.id);
+      const store = await getStore();
+      await store.deleteHabit(habit.id);
       await refresh();
     } catch (e) {
       setError(e.message);

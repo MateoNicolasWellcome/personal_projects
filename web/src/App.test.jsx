@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import App from "./App.jsx";
+import { __resetStore } from "./storage.js";
 
 /**
  * The frontend talks to the API via fetch. We stub a tiny in-memory
@@ -25,6 +26,9 @@ function installFakeApi() {
     const method = options.method || "GET";
     const json = (status, body) => ({ ok: status < 400, status, json: async () => body });
 
+    if (url === "/api/health") {
+      return json(200, { status: "ok" });
+    }
     if (url === "/api/timespans") {
       return json(200, {
         timespans: [
@@ -53,7 +57,10 @@ function installFakeApi() {
   });
 }
 
-beforeEach(() => installFakeApi());
+beforeEach(() => {
+  __resetStore();
+  installFakeApi();
+});
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
