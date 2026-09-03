@@ -8,33 +8,46 @@ import App from "./App.jsx";
  * backend so the component can be exercised end-to-end without a server.
  */
 function installFakeApi() {
-  const tasks = [];
+  const habits = [];
+
+  function decorate(h) {
+    const todayCount = h._today || 0;
+    const todayComplete = todayCount >= h.timesPerDay;
+    return { ...h, todayCount, todayComplete, streak: todayComplete ? 1 : 0 };
+  }
+
+  function stats() {
+    const completedToday = habits.filter((h) => (h._today || 0) >= h.timesPerDay).length;
+    return { total: habits.length, completedToday, activeToday: habits.length - completedToday };
+  }
+
   globalThis.fetch = vi.fn(async (url, options = {}) => {
     const method = options.method || "GET";
-    const json = (status, body) => ({
-      ok: status < 400,
-      status,
-      json: async () => body,
-    });
+    const json = (status, body) => ({ ok: status < 400, status, json: async () => body });
 
-    if (url === "/api/tasks" && method === "GET") {
-      const completed = tasks.filter((t) => t.completed).length;
+    if (url === "/api/timespans") {
       return json(200, {
-        tasks: [...tasks].reverse(),
-        stats: { total: tasks.length, completed, active: tasks.length - completed },
+        timespans: [
+          { id: "daily", label: "Daily", days: 1 },
+          { id: "weekly", label: "Weekly", days: 7 },
+        ],
       });
     }
-    if (url === "/api/tasks" && method === "POST") {
-      const { title } = JSON.parse(options.body);
-      const task = { id: String(tasks.length + 1), title, completed: false, createdAt: new Date().toISOString() };
-      tasks.push(task);
-      return json(201, task);
+    if (url === "/api/habits" && method === "GET") {
+      return json(200, { habits: habits.map(decorate), stats: stats() });
     }
-    if (url.startsWith("/api/tasks/") && method === "PATCH") {
-      const id = url.split("/").pop();
-      const task = tasks.find((t) => t.id === id);
-      Object.assign(task, JSON.parse(options.body));
-      return json(200, task);
+    if (url === "/api/habits" && method === "POST") {
+      const body = JSON.parse(options.body);
+      const habit = { id: String(habits.length + 1), logs: {}, _today: 0, ...body };
+      habits.push(habit);
+      return json(201, decorate(habit));
+    }
+    if (url.endsWith("/check-in") && method === "POST") {
+      const id = url.split("/").at(-2);
+      const habit = habits.find((h) => h.id === id);
+      const { delta } = JSON.parse(options.body);
+      habit._today = Math.max(0, Math.min(habit.timesPerDay, (habit._today || 0) + delta));
+      return json(200, decorate(habit));
     }
     return json(404, { error: "not found" });
   });
@@ -46,22 +59,33 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe("App", () => {
-  it("shows the empty state, then adds and completes a task", async () => {
+describe("Habit Tracker App", () => {
+  it("registers a habit and checks in to complete it", async () => {
     const user = userEvent.setup();
     render(<App />);
 
-    expect(await screen.findByText(/nothing here yet/i)).toBeInTheDocument();
+    expect(await screen.findByText(/no habits yet/i)).toBeInTheDocument();
 
-    await user.type(screen.getByLabelText(/new task title/i), "Buy milk");
-    await user.click(screen.getByRole("button", { name: /add task/i }));
+    await user.type(screen.getByLabelText(/habit name/i), "Meditate");
+    await user.type(screen.getByLabelText(/^goal$/i), "Calm mornings");
+    await user.selectOptions(screen.getByLabelText(/timespan/i), "daily");
+    const times = screen.getByLabelText(/times per day/i);
+    await user.clear(times);
+    await user.type(times, "2");
+    await user.click(screen.getByRole("button", { name: /add habit/i }));
 
-    expect(await screen.findByText("Buy milk")).toBeInTheDocument();
+    expect(await screen.findByText("Meditate")).toBeInTheDocument();
+    expect(screen.getByText("Calm mornings")).toBeInTheDocument();
+    expect(screen.getByText("0/2 today")).toBeInTheDocument();
 
-    const checkbox = screen.getByRole("checkbox");
-    await user.click(checkbox);
+    const checkIn = screen.getByRole("button", { name: /check in meditate/i });
+    await user.click(checkIn);
+    expect(await screen.findByText("1/2 today")).toBeInTheDocument();
 
-    await waitFor(() => expect(screen.getByText("Buy milk")).toBeInTheDocument());
-    expect(checkbox).toBeChecked();
+    await user.click(screen.getByRole("button", { name: /check in meditate/i }));
+    await waitFor(() => expect(screen.getByText("2/2 today")).toBeInTheDocument());
+    const completed = screen.getByRole("button", { name: /check in meditate/i });
+    expect(completed).toBeDisabled();
+    expect(completed).toHaveTextContent(/completed/i);
   });
 });

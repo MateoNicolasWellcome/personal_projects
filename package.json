@@ -2,7 +2,7 @@
   "name": "personal-projects",
   "version": "1.0.0",
   "private": true,
-  "description": "A modern full-stack Task Manager app (Express API + Vite/React frontend).",
+  "description": "A modern full-stack Habit Tracker app (Express API + Vite/React frontend).",
   "workspaces": [
     "server",
     "web"

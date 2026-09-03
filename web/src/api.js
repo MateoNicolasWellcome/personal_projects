@@ -14,9 +14,12 @@ async function request(path, options) {
 }
 
 export const api = {
-  listTasks: () => request("/tasks"),
-  createTask: (title) => request("/tasks", { method: "POST", body: JSON.stringify({ title }) }),
-  updateTask: (id, changes) =>
-    request(`/tasks/${id}`, { method: "PATCH", body: JSON.stringify(changes) }),
-  deleteTask: (id) => request(`/tasks/${id}`, { method: "DELETE" }),
+  listHabits: () => request("/habits"),
+  listTimespans: () => request("/timespans"),
+  createHabit: (habit) => request("/habits", { method: "POST", body: JSON.stringify(habit) }),
+  updateHabit: (id, changes) =>
+    request(`/habits/${id}`, { method: "PATCH", body: JSON.stringify(changes) }),
+  checkIn: (id, delta = 1) =>
+    request(`/habits/${id}/check-in`, { method: "POST", body: JSON.stringify({ delta }) }),
+  deleteHabit: (id) => request(`/habits/${id}`, { method: "DELETE" }),
 };

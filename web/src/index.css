@@ -5,8 +5,9 @@
   --border: rgba(255, 255, 255, 0.08);
   --text: #e7e9f3;
   --muted: #9aa3c0;
-  --brand: #7c86ff;
-  --brand-2: #b06bff;
+  --brand: #ff8a3c;
+  --brand-2: #ff4d6d;
+  --good: #34d399;
   --danger: #ff6b81;
   font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
 }
@@ -20,20 +21,20 @@ body {
   min-height: 100vh;
   color: var(--text);
   background:
-    radial-gradient(1200px 600px at 20% -10%, rgba(124, 134, 255, 0.25), transparent 60%),
-    radial-gradient(900px 500px at 100% 0%, rgba(176, 107, 255, 0.2), transparent 55%),
+    radial-gradient(1200px 600px at 15% -10%, rgba(255, 138, 60, 0.22), transparent 60%),
+    radial-gradient(900px 500px at 100% 0%, rgba(255, 77, 109, 0.18), transparent 55%),
     var(--bg);
 }
 
 .app {
-  max-width: 640px;
+  max-width: 720px;
   margin: 0 auto;
   padding: 48px 20px 64px;
 }
 
 .hero {
   text-align: center;
-  margin-bottom: 28px;
+  margin-bottom: 26px;
 }
 
 .badge {
@@ -42,12 +43,10 @@ body {
   margin: 0 auto 14px;
   display: grid;
   place-items: center;
-  font-size: 26px;
-  font-weight: 700;
+  font-size: 28px;
   border-radius: 16px;
-  color: white;
   background: linear-gradient(135deg, var(--brand), var(--brand-2));
-  box-shadow: 0 12px 30px rgba(124, 134, 255, 0.4);
+  box-shadow: 0 12px 30px rgba(255, 77, 109, 0.35);
 }
 
 .hero h1 {
@@ -70,14 +69,35 @@ body {
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
 }
 
-.composer {
-  display: flex;
-  gap: 10px;
+.form-card h2 {
+  margin: 0 0 16px;
+  font-size: 1.1rem;
 }
 
-.composer input {
-  flex: 1;
-  padding: 13px 15px;
+.habit-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field.span-2 {
+  grid-column: 1 / -1;
+}
+
+.field > span {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.field input,
+.field select {
+  padding: 12px 14px;
   border-radius: 12px;
   border: 1px solid var(--border);
   background: rgba(0, 0, 0, 0.25);
@@ -87,22 +107,27 @@ body {
   transition: border-color 0.15s ease;
 }
 
-.composer input:focus {
+.field input:focus,
+.field select:focus {
   border-color: var(--brand);
 }
 
-.composer button {
-  padding: 13px 18px;
+.submit-row {
+  align-items: flex-start;
+}
+
+.submit-row button {
+  padding: 12px 20px;
   border: none;
   border-radius: 12px;
   font-weight: 600;
   color: white;
   cursor: pointer;
   background: linear-gradient(135deg, var(--brand), var(--brand-2));
-  transition: transform 0.12s ease, opacity 0.12s ease;
+  transition: transform 0.12s ease;
 }
 
-.composer button:hover {
+.submit-row button:hover {
   transform: translateY(-1px);
 }
 
@@ -112,90 +137,151 @@ body {
   font-size: 0.9rem;
 }
 
-.toolbar {
+.stats-bar {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin: 18px 2px 6px;
-  flex-wrap: wrap;
-}
-
-.stats {
-  display: flex;
-  gap: 14px;
+  gap: 18px;
+  justify-content: center;
+  margin: 22px 0 14px;
   color: var(--muted);
   font-size: 0.9rem;
 }
 
-.stats strong {
+.stats-bar strong {
   color: var(--text);
 }
 
-.filters {
-  display: flex;
-  gap: 6px;
-}
-
-.chip {
-  border: 1px solid var(--border);
-  background: transparent;
-  color: var(--muted);
-  padding: 6px 12px;
-  border-radius: 999px;
-  cursor: pointer;
-  text-transform: capitalize;
-  font-size: 0.85rem;
-}
-
-.chip.active {
-  color: white;
-  border-color: transparent;
-  background: linear-gradient(135deg, var(--brand), var(--brand-2));
-}
-
-.tasks {
+.habits {
   list-style: none;
-  margin: 10px 0 0;
+  margin: 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  display: grid;
+  gap: 14px;
 }
 
-.task {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 12px 14px;
-  border-radius: 12px;
+.habit {
+  background: var(--panel);
   border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 18px;
+  transition: border-color 0.15s ease;
+}
+
+.habit.done {
+  border-color: rgba(52, 211, 153, 0.5);
+}
+
+.habit-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.habit-head h3 {
+  margin: 0 0 4px;
+  font-size: 1.15rem;
+}
+
+.goal {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0;
+}
+
+.pill {
+  font-size: 0.78rem;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--muted);
   background: rgba(0, 0, 0, 0.2);
 }
 
-.task label {
+.pill.streak {
+  color: #ffd9a0;
+  border-color: rgba(255, 138, 60, 0.4);
+  background: rgba(255, 138, 60, 0.12);
+}
+
+.progress {
   display: flex;
   align-items: center;
   gap: 12px;
-  cursor: pointer;
+  margin-bottom: 14px;
+}
+
+.progress-track {
   flex: 1;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.3);
+  overflow: hidden;
 }
 
-.task input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  accent-color: var(--brand);
+.progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--brand), var(--brand-2));
+  transition: width 0.25s ease;
+}
+
+.habit.done .progress-fill {
+  background: linear-gradient(90deg, var(--good), #10b981);
+}
+
+.progress-label {
+  font-size: 0.82rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.checkin {
+  flex: 1;
+  padding: 11px 16px;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--brand), var(--brand-2));
+  transition: transform 0.12s ease, opacity 0.12s ease;
+}
+
+.checkin:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.checkin:disabled {
+  cursor: default;
+  background: rgba(52, 211, 153, 0.18);
+  color: var(--good);
+}
+
+.ghost {
+  width: 44px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  font-size: 1.2rem;
   cursor: pointer;
 }
 
-.task .title {
-  font-size: 1rem;
-}
-
-.task.done .title {
-  color: var(--muted);
-  text-decoration: line-through;
+.ghost:disabled {
+  opacity: 0.35;
+  cursor: default;
 }
 
 .delete {
@@ -217,12 +303,21 @@ body {
 .empty {
   text-align: center;
   color: var(--muted);
-  padding: 28px 0 12px;
+  padding: 28px 0;
 }
 
 .foot {
   text-align: center;
   color: var(--muted);
   font-size: 0.82rem;
-  margin-top: 22px;
+  margin-top: 26px;
+}
+
+@media (max-width: 520px) {
+  .habit-form {
+    grid-template-columns: 1fr;
+  }
+  .field.span-2 {
+    grid-column: 1;
+  }
 }
