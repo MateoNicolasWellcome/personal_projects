@@ -15,6 +15,7 @@ export default function App() {
   const [form, setForm] = useState(DEFAULT_FORM);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [usingLocal, setUsingLocal] = useState(false);
 
   async function refresh() {
     const store = await getStore();
@@ -26,6 +27,7 @@ export default function App() {
   useEffect(() => {
     (async () => {
       const store = await getStore();
+      setUsingLocal(Boolean(store.isLocal));
       const [data, ts] = await Promise.all([store.listHabits(), store.listTimespans()]);
       setHabits(data.habits);
       setStats(data.stats);
@@ -162,7 +164,11 @@ export default function App() {
         </ul>
       )}
 
-      <footer className="foot">Progress persists to the API's JSON store.</footer>
+      <footer className="foot">
+        {usingLocal
+          ? "Progress is saved in your browser (localStorage)."
+          : "Progress persists to the API's JSON store."}
+      </footer>
     </div>
   );
 }
